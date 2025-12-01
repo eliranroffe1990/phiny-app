@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PHINY - Smart Money Management for Young Investors">
+    <meta name="theme-color" content="#B8E0D2">
+    <title>PHINY - ניהול כסף חכם לסכומים קטנים</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #D4A5E3 0%, #A8D5E0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #5A4B5E;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 100vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #B8E0D2 0%, #A4C7D8 100%);
+            color: #5A4B5E;
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .screen-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 20px;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* About Screen */
+        .about-hero {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .about-hero-icon {
+            font-size: 80px;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .about-hero h1 {
+            color: #B8A8D2;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .about-hero p {
+            color: #7F8C8D;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .about-section {
+            background: linear-gradient(135deg, #E8F5E9 0%, #F5F9F7 100%);
+            border: 2px solid #B8E0D2;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .about-section h3 {
+            color: #5A4B5E;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .about-section p {
+            color: #5A4B5E;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .about-section ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .about-section li {
+            color: #5A4B5E;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .vision-box {
+            background: linear-gradient(135deg, #FFF8E7 0%, #FFF5E1 100%);
+            border-left: 4px solid #E8D4A0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .vision-box h3 {
+            color: #8B7D5E;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .vision-box p {
+            color: #8B7D5E;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .mission-box {
+            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
+            border: 2px solid #B8A8D2;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .mission-box h3 {
+            color: #5A4B5E;
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .mission-box p {
+            color: #5A4B5E;
+            font-size: 13px;
+            line-height: 1.8;
+            margin-bottom: 6px;
+        }
+
+        .btn-primary {
+            background: #B8E0D2;
+            color: #5A4B5E;
+            font-weight: 700;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            background: #A4D5C8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(184, 224, 210, 0.3);
+        }
+
+        /* Auth Styles */
+        .auth-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #E8DFF0;
+            background: white;
+            color: #7F8C8D;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .auth-tab.active {
+            background: #B8E0D2;
+            color: #5A4B5E;
+            border-color: #B8E0D2;
+        }
+
+        .auth-form-container {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #5A4B5E;
+            margin-bottom: 6px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E8DFF0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: #B8A8D2;
+            background: #F9F5FB;
+        }
+
+        .password-strength {
+            height: 4px;
+            background: #E8DFF0;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .password-strength.weak {
+            background: linear-gradient(90deg, #FF9999 0%, transparent 100%);
+        }
+
+        .password-strength.medium {
+            background: linear-gradient(90deg, #FFD699 0%, transparent 100%);
+        }
+
+        .password-strength.strong {
+            background: linear-gradient(90deg, #99FF99 0%, transparent 100%);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #7F8C8D;
+            font-size: 12px;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: #E8DFF0;
+        }
+
+        .divider span:not(.divider-line) {
+            margin: 0 10px;
+        }
+
+        .oauth-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .oauth-button {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #E8DFF0;
+            background: white;
+            color: #5A4B5E;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .oauth-button:hover {
+            border-color: #B8A8D2;
+            background: #F9F5FB;
+        }
+
+        .demo-info {
+            background: #F5F9F7;
+            border: 2px solid #B8E0D2;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .demo-info p {
+            font-size: 12px;
+            color: #5A4B5E;
+            margin: 4px 0;
+        }
+
+        .demo-login-btn {
+            background: #B8E0D2;
+            color: #5A4B5E;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .demo-login-btn:hover {
+            background: #A4D5C8;
+            transform: translateY(-2px);
+        }
+
+        .checkbox-group {
+            background: white;
+            border: 2px solid #E8DFF0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-top: 3px;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-size: 12px;
+            color: #5A4B5E;
+        }
+
+        .age-alert {
+            background: #FFF8E7;
+            border: 2px solid #E8D4A0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+            color: #8B7D5E;
+            font-size: 13px;
+            display: none;
+        }
+
+        .parental-section {
+            background: #E8F5E9;
+            border: 2px solid #B8E0D2;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .adult-section {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .screen-container {
+                padding: 20px;
+            }
+
+            .about-hero-icon {
+                font-size: 60px;
+            }
+
+            .about-hero h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <h1>💡 PHINY</h1>
+            <p>ניהול כסף חכם - סכומים קטנים, השפעה גדולה</p>
+        </div>
+
+        <div class="screen-container">
+            <!-- About Screen -->
+            <div class="screen active" id="aboutScreen">
+                <div class="about-hero">
+                    <div class="about-hero-icon">💡</div>
+                    <h1>PHINY</h1>
+                    <p>אפליקציה לניהול כסף חכם</p>
+                </div>
+
+                <div class="mission-box">
+                    <h3>🎯 המטרה שלנו</h3>
+                    <p><strong>"להראות שכסף קטן שנחסך ומושקע במקומות נכונים מניב רווחים משמעותיים"</strong></p>
+                    <p style="margin-top: 10px; font-size: 12px;">
+                        כל שקל שאתה חוסך היום יכול להפוך לעשרות שקלים מחר.
+                        PHINY מלמדת אותך איך זה עובד דרך משחק, חיסכון חכם והשקעות מושכלות.
+                    </p>
+                </div>
+
+                <div class="about-section">
+                    <h3>👨‍🎓 בנוי על מחקר אקדמי</h3>
+                    <p>PHINY מבוססת על דוקטורנט בכלכלה התנהגותית של Dr. Eliran, החוקר תופעה פיננסית חשובה:</p>
+                    <p><strong>"Small Amount Fallacy"</strong> - תופעה שבה אנשים מתעלמים מסכומים קטנים וחוסכים בצורה חלקית.</p>
+                    <p style="margin-top: 8px; font-size: 12px; color: #6B8E7D;">
+                        המחקר מוכיח שהעברת חשיבות לסכומים קטנים בעלת השפעה משמעותית על התנהגות חיסכון וצמיחה פיננסית לטווח ארוך.
+                    </p>
+                </div>
+
+                <div class="vision-box">
+                    <h3>🎓 החזון שלנו</h3>
+                    <p><strong>"בניית חיים פיננסיים בטוחים מגיל צעיר"</strong></p>
+                    <p style="margin-top: 10px;">
+                        אנחנו מאמינים שהחינוך הפיננסי צריך להתחיל מילדות. על ידי:
+                    </p>
+                    <ul style="margin-top: 8px;">
+                        <li>✓ למידה של חיסכון דרך משחק</li>
+                        <li>✓ הבנת ערך כל שקל</li>
+                        <li>✓ בנית הרגלים פיננסיים טובים</li>
+                        <li>✓ הכנה להשקעות ממשיות</li>
+                        <li>✓ הבנת סיכון וריווח</li>
+                    </ul>
+                </div>
+
+                <div class="about-section">
+                    <h3>🚀 איך אנחנו עוזרים</h3>
+                    <p><strong>עבור ילדים וצעירים:</strong></p>
+                    <ul style="margin-top: 8px;">
+                        <li>🎮 משחק אתגרים חיסכון</li>
+                        <li>📊 ניתוח ויזואלי של חיסכון</li>
+                        <li>📚 חינוך פיננסי</li>
+                        <li>⭐ בנית הרגלים</li>
+                    </ul>
+                    <p style="margin-top: 12px;"><strong>עבור הורים:</strong></p>
+                    <ul style="margin-top: 8px;">
+                        <li>👁️ פיקוח על חיסכון הילד</li>
+                        <li>💰 השקעה בעתידו</li>
+                        <li>🛡️ ליפוי כוח משפטי</li>
+                        <li>🏦 קשר עם בנקים</li>
+                    </ul>
+                </div>
+
+                <div class="about-section">
+                    <h3>✨ ערכים שלנו</h3>
+                    <ul>
+                        <li>🎓 <strong>חינוך</strong> - מבוסס על מחקר</li>
+                        <li>🛡️ <strong>בטיחות</strong> - מגיל צעיר</li>
+                        <li>👨‍👩‍👧 <strong>משפחה</strong> - אמון הורים</li>
+                        <li>💡 <strong>חדשנות</strong> - טכנולוגיה חכמה</li>
+                    </ul>
+                </div>
+
+                <button class="btn-primary" onclick="goToAuth()">
+                    🚀 בואו נתחיל
+                </button>
+            </div>
+
+            <!-- Auth Screen -->
+            <div class="screen" id="authScreen">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 50px; margin-bottom: 15px;">💡</div>
+                    <h2 style="color: #5A4B5E; margin-bottom: 10px;">ברוכים הבאים ל-PHINY</h2>
+                    <p style="color: #7F8C8D; font-size: 13px;">סכומים קטנים, השפעה גדולה</p>
+                </div>
+
+                <!-- Auth Mode Tabs -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="auth-tab active" id="loginTab" onclick="switchAuthMode('login')">
+                        התחברות
+                    </button>
+                    <button class="auth-tab" id="signupTab" onclick="switchAuthMode('signup')">
+                        הרשמה חדשה
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form-container" style="display: block;">
+                    <div class="form-group">
+                        <label>📧 כתובת דוא"ל</label>
+                        <input type="email" id="loginEmail" placeholder="your@email.com" class="auth-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label>🔐 סיסמה</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" class="auth-input">
+                        <button style="background: none; border: none; color: #B8A8D2; cursor: pointer; font-size: 12px; margin-top: 5px; text-decoration: underline;">שכחת סיסמה?</button>
+                    </div>
+
+                    <button class="btn-primary" onclick="handleLogin()">🚀 התחברות</button>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signupForm" class="auth-form-container" style="display: none;">
+                    <h3 style="color: #5A4B5E; margin-bottom: 15px; font-size: 15px;">פרטי רישום מלאים</h3>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label>👤 שם פרטי</label>
+                            <input type="text" id="signupFirstName" placeholder="אליראן" class="auth-input">
+                        </div>
+                        <div class="form-group">
+                            <label>👨‍👩‍👧 שם משפחה</label>
+                            <input type="text" id="signupLastName" placeholder="כהן" class="auth-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📧 דוא"ל</label>
+                        <input type="email" id="signupEmail" placeholder="your@email.com" class="auth-input">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label>🎂 גיל</label>
+                            <input type="number" id="signupAge" placeholder="18" class="auth-input" min="13" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label>📍 איזור</label>
+                            <select id="signupRegion" class="auth-input">
+                                <option value="">בחר איזור</option>
+                                <option value="north">צפון</option>
+                                <option value="center">מרכז</option>
+                                <option value="tel_aviv">תל אביב</option>
+                                <option value="south">דרום</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📞 טלפון</label>
+                        <input type="tel" id="signupPhone" placeholder="05X-XXX-XXXX" class="auth-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label>🔐 סיסמה</label>
+                        <input type="password" id="signupPassword" placeholder="לפחות 8 תווים" class="auth-input">
+                        <div id="passwordStrength" class="password-strength"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>✓ אישור סיסמה</label>
+                        <input type="password" id="signupConfirm" placeholder="••••••••" class="auth-input">
+                    </div>
+
+                    <div id="ageAlert" class="age-alert">
+                        ⚠️ <strong>חשוב:</strong> אתה בן/ת מתחת לגיל 18. כדי להשתמש בשירותי השקעה, נדרש אישור הורים וליפוי כוח.
+                    </div>
+
+                    <div id="parentalSection" class="parental-section">
+                        <h4 style="color: #5A4B5E; margin-bottom: 12px; font-size: 13px;">📋 פרטי הורה/אפוטרופוס</h4>
+                        <div class="form-group">
+                            <label>שם הורה</label>
+                            <input type="text" id="parentName" placeholder="שם מלא" class="auth-input">
+                        </div>
+                        <div class="form-group">
+                            <label>מספר ת.ז. הורה</label>
+                            <input type="text" id="parentId" placeholder="9 ספרות" class="auth-input">
+                        </div>
+                        <div class="form-group">
+                            <label>טלפון הורה</label>
+                            <input type="tel" id="parentPhone" placeholder="05X-XXX-XXXX" class="auth-input">
+                        </div>
+                        <div class="form-group">
+                            <label>דוא"ל הורה</label>
+                            <input type="email" id="parentEmail" placeholder="parent@email.com" class="auth-input">
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="parentalConsent">
+                            <label>אני מאשר/ת שהצעיר/ה רשאי/ת להשתמש בשירותי השקעה בתיווך הורה</label>
+                        </div>
+                    </div>
+
+                    <div id="adultSection" class="adult-section">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="adultConsent">
+                            <label>⚠️ אני מאשר/ת שאני בן/ת 18+ ומעונין/ת בשירותי השקעה. אני מודע/ת לסיכונים.</label>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="agreeTerms">
+                        <label>✓ אני מסכים/ה לתנאי השירות, מדיניות הפרטיות וחוק הגנת הצרכן</label>
+                    </div>
+
+                    <button class="btn-primary" onclick="handleAdvancedSignup()">✨ הרשמה</button>
+                </div>
+
+                <!-- Divider -->
+                <div class="divider" style="margin: 20px 0;">
+                    <span class="divider-line"></span>
+                    <span>או התחבר דרך</span>
+                    <span class="divider-line"></span>
+                </div>
+
+                <!-- OAuth Buttons -->
+                <div class="oauth-buttons">
+                    <button class="oauth-button" onclick="handleGoogleAuth()">🔵 Google</button>
+                    <button class="oauth-button" onclick="handleAppleAuth()">🍎 Apple</button>
+                </div>
+
+                <!-- Demo Account -->
+                <div class="demo-info">
+                    <p><strong>🎮 חשבון Demo:</strong></p>
+                    <p>📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="553130383a15253d3c3b2c7b342525">[email&#160;protected]</a></p>
+                    <p>🔐 Demo123456</p>
+                    <button class="demo-login-btn" onclick="demoLogin()">הכנס כ-Demo</button>
+                </div>
+            </div>
+
+            <!-- Setup Screen -->
+            <div class="screen" id="setupScreen">
+                <h2 style="color: #5A4B5E; margin-bottom: 20px;">🎮 בחר את ההעדפות שלך</h2>
+                
+                <div class="form-group">
+                    <label>משחק מצב</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="singlePlayer" checked>
+                        <label>👤 משחק בודד</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="multiPlayer">
+                        <label>👥 משחק כפוף (בעתיד)</label>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="goDashboard()">→ המשך לדשבורד</button>
+            </div>
+
+            <!-- Dashboard Screen -->
+            <div class="screen" id="dashboardScreen">
+                <div class="greeting" style="background: linear-gradient(135deg, #B8E0D2 0%, #C7C8E8 100%); padding: 15px; margin: -30px -20px 20px -20px; border-radius: 0; color: #5A4B5E;">
+                    <h2 id="greetingName" style="color: #5A4B5E; margin-bottom: 5px;">שלום, משתמש! 👋</h2>
+                    <p style="font-size: 13px; color: #5A4B5E;">אתה מתנהל טוב!</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                    <div style="background: #F5F9F7; border: 2px solid #B8E0D2; border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 11px; color: #7F8C8D;">חסכון כולל</div>
+                        <div id="dashTotalSaved" style="font-size: 20px; color: #B8A8D2; font-weight: 700;">₪0</div>
+                    </div>
+                    <div style="background: #F5F9F7; border: 2px solid #B8E0D2; border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 11px; color: #7F8C8D;">נקודות</div>
+                        <div id="dashTotalPoints" style="font-size: 20px; color: #B8A8D2; font-weight: 700;">0</div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="goToAuth()">← חזור לתחילה</button>
+            </div>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // Variables
+        let currentScreen = 'aboutScreen';
+        let userName = 'משתמש';
+        let userEmail = '';
+        let userAge = null;
+        let userRegion = '';
+        let userPhone = '';
+        let userIsAdult = false;
+        let userParentalConsent = null;
+
+        let userStats = {
+            totalSaved: 0,
+            totalPoints: 0,
+            totalChallenges: 0
+        };
+
+        // Show/Hide Screens
+        function showScreen(screenId) {
+            document.getElementById(currentScreen).classList.remove('active');
+            document.getElementById(screenId).classList.add('active');
+            currentScreen = screenId;
+            window.scrollTo(0, 0);
+        }
+
+        function goToAuth() {
+            showScreen('authScreen');
+            switchAuthMode('login');
+        }
+
+        function goDashboard() {
+            updateDashboard();
+            showScreen('dashboardScreen');
+        }
+
+        // Auth Handlers
+        function switchAuthMode(mode) {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const loginTab = document.getElementById('loginTab');
+            const signupTab = document.getElementById('signupTab');
+
+            if (mode === 'login') {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+            }
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                alert('❌ אנא מלא את כל השדות');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                alert('❌ אנא הכנס כתובת דוא"ל תקינה');
+                return;
+            }
+
+            userName = email.split('@')[0];
+            userEmail = email;
+            userIsAdult = true;
+            alert(`🎉 התחברות בהצלחה!\nברוכים הבאים חזרה, ${userName}!`);
+            showScreen('setupScreen');
+        }
+
+        function handleAdvancedSignup() {
+            const firstName = document.getElementById('signupFirstName').value;
+            const lastName = document.getElementById('signupLastName').value;
+            const email = document.getElementById('signupEmail').value;
+            const age = parseInt(document.getElementById('signupAge').value);
+            const region = document.getElementById('signupRegion').value;
+            const phone = document.getElementById('signupPhone').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirm = document.getElementById('signupConfirm').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+
+            if (!firstName || !lastName || !email || !age || !region || !phone || !password || !confirm) {
+                alert('❌ אנא מלא את כל השדות המסומנים');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                alert('❌ אנא הכנס כתובת דוא"ל תקינה');
+                return;
+            }
+
+            if (isNaN(age) || age < 13) {
+                alert('❌ גיל מינימום הוא 13 שנים');
+                return;
+            }
+
+            if (!/^05\d{8}$/.test(phone.replace('-', ''))) {
+                alert('❌ אנא הכנס מספר טלפון תקין');
+                return;
+            }
+
+            if (password.length < 8) {
+                alert('❌ הסיסמה חייבת להיות לפחות 8 תווים');
+                return;
+            }
+
+            if (password !== confirm) {
+                alert('❌ הסיסמאות אינן תואמות');
+                return;
+            }
+
+            if (age < 18) {
+                const parentName = document.getElementById('parentName').value;
+                const parentId = document.getElementById('parentId').value;
+                const parentPhone = document.getElementById('parentPhone').value;
+                const parentEmail = document.getElementById('parentEmail').value;
+                const parentalConsent = document.getElementById('parentalConsent').checked;
+
+                if (!parentName || !parentId || !parentPhone || !parentEmail) {
+                    alert('❌ אנא מלא את כל פרטי ההורה');
+                    return;
+                }
+
+                if (!parentalConsent) {
+                    alert('❌ נדרש אישור הורה');
+                    return;
+                }
+
+                userParentalConsent = {
+                    parentName: parentName,
+                    parentId: parentId,
+                    parentPhone: parentPhone,
+                    parentEmail: parentEmail,
+                    consentDate: new Date().toLocaleDateString('he-IL')
+                };
+            } else {
+                const adultConsent = document.getElementById('adultConsent').checked;
+                if (!adultConsent) {
+                    alert('❌ אנא אשר את האישור');
+                    return;
+                }
+            }
+
+            if (!agreeTerms) {
+                alert('❌ אנא אשר את תנאי השירות');
+                return;
+            }
+
+            userName = `${firstName} ${lastName}`;
+            userEmail = email;
+            userAge = age;
+            userRegion = region;
+            userPhone = phone;
+            userIsAdult = age >= 18;
+
+            alert(`🎉 הרשמה בהצלחה!\nברוכים הבאים, ${firstName}!`);
+            showScreen('setupScreen');
+        }
+
+        function handleGoogleAuth() {
+            alert('🔵 Google Sign-In\nהחיבור יופעל בגרסה הבאה');
+        }
+
+        function handleAppleAuth() {
+            alert('🍎 Apple Sign-In\nהחיבור יופעל בגרסה הבאה');
+        }
+
+        function demoLogin() {
+            userName = 'Demo User';
+            userEmail = 'demo@phiny.app';
+            userIsAdult = true;
+            userStats.totalSaved = 2500;
+            userStats.totalPoints = 1250;
+            alert('🎮 Demo Mode Activated!\n\nחשבון: demo@phiny.app');
+            showScreen('setupScreen');
+        }
+
+        function updateDashboard() {
+            document.getElementById('greetingName').textContent = `שלום, ${userName}! 👋`;
+            document.getElementById('dashTotalSaved').textContent = `₪${userStats.totalSaved}`;
+            document.getElementById('dashTotalPoints').textContent = userStats.totalPoints;
+        }
+
+        // Age change listener
+        document.addEventListener('input', function(e) {
+            if (e.target.id === 'signupAge') {
+                const age = parseInt(e.target.value);
+                const ageAlert = document.getElementById('ageAlert');
+                const parentalSection = document.getElementById('parentalSection');
+                const adultSection = document.getElementById('adultSection');
+
+                if (age && age < 18) {
+                    ageAlert.style.display = 'block';
+                    parentalSection.style.display = 'block';
+                    adultSection.style.display = 'none';
+                } else if (age && age >= 18) {
+                    ageAlert.style.display = 'none';
+                    parentalSection.style.display = 'none';
+                    adultSection.style.display = 'block';
+                } else {
+                    ageAlert.style.display = 'none';
+                    parentalSection.style.display = 'none';
+                    adultSection.style.display = 'none';
+                }
+            }
+
+            if (e.target.id === 'signupPassword') {
+                const password = e.target.value;
+                const strengthBar = document.getElementById('passwordStrength');
+                
+                if (password.length < 8) {
+                    strengthBar.className = 'password-strength weak';
+                } else if (password.length < 12 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+                    strengthBar.className = 'password-strength medium';
+                } else {
+                    strengthBar.className = 'password-strength strong';
+                }
+            }
